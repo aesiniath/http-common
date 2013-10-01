@@ -1,0 +1,13 @@
+cabal-dev/
+dist/
+snippet
+check
+bench
+report.html
+*.prof
+*.mem
+tags
+TAGS
+config.h
+tests/benchmark.hs
+tests/snippet.hs
