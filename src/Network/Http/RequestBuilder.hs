@@ -91,8 +91,7 @@ buildRequest mm = do
 http :: Method -> ByteString -> RequestBuilder ()
 http m p' = do
     q <- get
-    let h0 = qHeaders q
-    let h1 = updateHeader h0 "User-Agent" VERSION
+    let h1 = qHeaders q
     let h2 = updateHeader h1 "Accept-Encoding" "gzip"
 
     let e  = case m of
