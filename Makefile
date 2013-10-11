@@ -148,3 +148,5 @@ doc: config.h $(CORE_SOURCES)
 dist: config.h
 	cabal sdist
 
+install: config.h all
+	cabal install

@@ -39,7 +39,8 @@ library
 
   hs-source-dirs:    src
   exposed-modules:   Network.Http.Types
-                     Network.Http.RequestBuilder
+  other-modules:     Network.Http.RequestBuilder,
+                     Network.Http.Internal
 
   ghc-options:       -O2
                      -Wall

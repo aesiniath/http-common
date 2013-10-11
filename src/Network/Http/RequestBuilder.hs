@@ -42,7 +42,7 @@ import Data.Int (Int64)
 import Data.List (intersperse)
 import Data.Monoid (mconcat)
 
-import Network.Http.Types
+import Network.Http.Internal
 
 --
 -- | The RequestBuilder monad allows you to abuse do-notation to
