@@ -40,6 +40,7 @@ module Network.Http.Internal (
     buildHeaders,
     lookupHeader,
     retreiveHeaders,
+    HttpType (getHeaders),
     HttpParseException(..),
 
     -- for testing
@@ -65,10 +66,10 @@ import Data.CaseInsensitive (CI, mk, original)
 import Data.HashMap.Strict (HashMap, delete, empty, foldrWithKey, insert,
                             insertWith, lookup, toList)
 import Data.Int (Int64)
-import Data.Word (Word16)
 import Data.List (foldl')
 import Data.Monoid (mconcat, mempty)
 import Data.Typeable (Typeable)
+import Data.Word (Word16)
 
 {-
     This is a String because that's what the uri package works in. There
@@ -285,6 +286,22 @@ getHeader p k =
     lookupHeader h k
   where
     h = pHeaders p
+
+--
+-- | Accessors common to both the outbound and return sides of an HTTP
+-- connection.
+--
+class HttpType a where
+    --
+    -- | Get the Headers from a Request or Response.
+    --
+    getHeaders :: a -> Headers
+
+instance HttpType Request where
+    getHeaders q = qHeaders q
+
+instance HttpType Response where
+    getHeaders p = pHeaders p
 
 
 composeResponseBytes :: Response -> Builder

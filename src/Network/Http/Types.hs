@@ -9,7 +9,7 @@
 -- the BSD licence.
 --
 
-{-# LANGUAGE OverloadedStrings  #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_HADDOCK not-home #-}
 
 --
@@ -39,9 +39,10 @@ module Network.Http.Types (
     buildHeaders,
     lookupHeader,
     retreiveHeaders,
+    HttpType (getHeaders),
     HttpParseException(..),
 
-    -- 
+    --
     RequestBuilder,
     buildRequest,
     http,

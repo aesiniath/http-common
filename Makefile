@@ -149,4 +149,4 @@ dist: config.h
 	cabal sdist
 
 install: config.h all
-	cabal install
+	cabal install --force-reinstalls
