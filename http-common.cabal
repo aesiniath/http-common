@@ -5,9 +5,10 @@ synopsis:            Common types for HTTP clients and servers
 description:
  /Overview/
  .
- Base types used by a variety of HTTP clients and servers.
- See http-streams "Network.Http.Client" or pipes-http "Pipes.Http.Client"
- for full documentation; they both export this package.
+ Base types used by a variety of HTTP clients and servers. See http-streams
+ "Network.Http.Client" or pipes-http "Pipes.Http.Client" for full
+ documentation. You can import @Network.Http.Types@ if you like, but both
+ http-streams and pipes-http re-export this package's types and functions.
 
 license:             BSD3
 license-file:        LICENCE
@@ -38,9 +39,10 @@ library
                      unordered-containers
 
   hs-source-dirs:    src
-  exposed-modules:   Network.Http.Types
-  other-modules:     Network.Http.RequestBuilder,
+  exposed-modules:   Network.Http.Types,
+                     Network.Http.RequestBuilder,
                      Network.Http.Internal
+  other-modules:     
 
   ghc-options:       -O2
                      -Wall

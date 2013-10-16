@@ -9,9 +9,8 @@
 -- the BSD licence.
 --
 
-{-# LANGUAGE BangPatterns       #-}
-{-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE OverloadedStrings  #-}
+{-# OPTIONS_HADDOCK not-home #-}
 
 --
 -- | Basic types used in HTTP communications.
@@ -52,12 +51,8 @@ module Network.Http.Types (
     setContentType,
     setContentLength,
     setExpectContinue,
-    setHeader,
+    setHeader
 
-
-    -- for testing
-    composeRequestBytes,
-    composeResponseBytes
 ) where
 
 import Network.Http.Internal

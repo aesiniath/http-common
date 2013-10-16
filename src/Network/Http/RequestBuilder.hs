@@ -9,9 +9,9 @@
 -- the BSD licence.
 --
 
-{-# LANGUAGE CPP                        #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings          #-}
+{-# OPTIONS_HADDOCK hide #-}
 
 module Network.Http.RequestBuilder (
     RequestBuilder,
@@ -63,13 +63,6 @@ newtype RequestBuilder α = RequestBuilder (State Request α)
 -- >         setHeader "X-WhoDoneIt" "The Butler"
 --
 -- Obviously it's up to you to later actually /send/ JSON data.
---
--- /Note/
---
--- The API of this function changed from version 0.3.1 to verison 0.4.0;
--- the original requirement to pass a Connection object has been removed,
--- thereby allowing you to build your Request before opening the
--- connection to the web server.
 --
 buildRequest :: RequestBuilder α -> IO Request
 buildRequest mm = do
