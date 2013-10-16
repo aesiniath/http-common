@@ -13,7 +13,9 @@
 {-# OPTIONS_HADDOCK not-home #-}
 
 --
--- | Basic types used in HTTP communications.
+-- | Basic types used in HTTP communications. This modules is re-exported by
+-- both "Network.Http.Client" and "Pipes.Http.Client", so if you're using
+-- either of those you don't need to explicitly import this module.
 --
 
 module Network.Http.Types (
