@@ -273,9 +273,9 @@ getStatusMessage = pStatusMsg
 -- >                Just x' -> read x' :: Int
 -- >                Nothing -> 0
 --
--- which of course is essentially what goes on inside the library when
--- @http-streams@ receives a response from the server and has to figure
--- out how many bytes to read.
+-- which of course is essentially what goes on inside the client library when
+-- it receives a response from the server and has to figure out how many bytes
+-- to read.
 --
 -- There is a fair bit of complexity in some of the other HTTP response
 -- fields, so there are a number of specialized functions for reading
@@ -387,6 +387,10 @@ updateHeader x k v =
     !result = insert (mk k) v m
     !m = unWrap x
 
+--
+-- | Remove a header from the map. If a field with that name is not present,
+-- then this will have no effect.
+--
 removeHeader :: Headers -> ByteString -> Headers
 removeHeader x k =
     Wrap result
@@ -395,13 +399,15 @@ removeHeader x k =
     !m = unWrap x
 
 
+--
+-- | Given a list of field-name,field-value pairs, construct a Headers map.
+--
 {-
-    Given a list of key,value pairs, construct a 'Headers' map. This is
-    only going to be used by RequestBuilder and ResponseParser,
-    obviously. And yes, as usual, we go to a lot of trouble to splice
-    out the function doing the work, in the name of type sanity.
+    This is only going to be used by RequestBuilder and ResponseParser,
+    obviously. And yes, as usual, we go to a lot of trouble to splice out the
+    function doing the work, in the name of type sanity.
 -}
-buildHeaders :: [(ByteString,ByteString)] -> Headers
+buildHeaders :: [(ByteString, ByteString)] -> Headers
 buildHeaders hs =
     Wrap result
   where
@@ -429,6 +435,9 @@ lookupHeader x k =
     !m = unWrap x
 
 
+--
+-- | Get the headers as a field-name,field-value association list.
+--
 retreiveHeaders :: Headers -> [(ByteString, ByteString)]
 retreiveHeaders x =
     map down $ toList m

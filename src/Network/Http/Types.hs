@@ -58,6 +58,8 @@ module Network.Http.Types (
     lookupHeader,
     retreiveHeaders,
     HttpType (getHeaders),
+
+    -- * Exceptions
     HttpParseException(..)
 
 ) where
