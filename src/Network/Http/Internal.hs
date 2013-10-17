@@ -291,11 +291,20 @@ getHeader p k =
 -- | Accessors common to both the outbound and return sides of an HTTP
 -- connection.
 --
-class HttpType a where
+class HttpType τ where
+
     --
-    -- | Get the Headers from a Request or Response.
+    -- | Get the Headers from a Request or Response. Most people do not need
+    -- this; for most cases you just need to get a header or two from the
+    -- response, for which you can use 'getHeader'. On the other hand, if you
+    -- do need to poke around in the raw headers,
     --
-    getHeaders :: a -> Headers
+    -- @ import Network.Http.Types @
+    --
+    -- will give you functions like 'lookupHeader' and 'updateHeader' to to
+    -- work with.
+    --
+    getHeaders :: τ -> Headers
 
 instance HttpType Request where
     getHeaders q = qHeaders q

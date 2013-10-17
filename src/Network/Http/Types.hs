@@ -19,30 +19,13 @@
 --
 
 module Network.Http.Types (
+    -- * Requests
     Hostname,
     Port,
     Request,
     EntityBody(..),
     ExpectMode(..),
-    Response,
-    StatusCode,
-    TransferEncoding(..),
-    ContentEncoding(..),
-    getStatusCode,
-    getStatusMessage,
-    getHeader,
-    Method(..),
-    Headers,
-    emptyHeaders,
-    updateHeader,
-    removeHeader,
-    buildHeaders,
-    lookupHeader,
-    retreiveHeaders,
-    HttpType (getHeaders),
-    HttpParseException(..),
 
-    --
     RequestBuilder,
     buildRequest,
     http,
@@ -54,7 +37,28 @@ module Network.Http.Types (
     setContentType,
     setContentLength,
     setExpectContinue,
-    setHeader
+    setHeader,
+
+    -- * Responses
+    Response,
+    StatusCode,
+    TransferEncoding(..),
+    ContentEncoding(..),
+    getStatusCode,
+    getStatusMessage,
+    getHeader,
+    Method(..),
+
+    -- * Headers
+    Headers,
+    emptyHeaders,
+    updateHeader,
+    removeHeader,
+    buildHeaders,
+    lookupHeader,
+    retreiveHeaders,
+    HttpType (getHeaders),
+    HttpParseException(..)
 
 ) where
 
