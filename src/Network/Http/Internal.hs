@@ -39,7 +39,7 @@ module Network.Http.Internal (
     removeHeader,
     buildHeaders,
     lookupHeader,
-    retreiveHeaders,
+    retrieveHeaders,
     HttpType (getHeaders),
     HttpParseException(..),
 
@@ -438,8 +438,8 @@ lookupHeader x k =
 --
 -- | Get the headers as a field-name,field-value association list.
 --
-retreiveHeaders :: Headers -> [(ByteString, ByteString)]
-retreiveHeaders x =
+retrieveHeaders :: Headers -> [(ByteString, ByteString)]
+retrieveHeaders x =
     map down $ toList m
   where
     !m = unWrap x

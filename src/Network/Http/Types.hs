@@ -56,7 +56,7 @@ module Network.Http.Types (
     removeHeader,
     buildHeaders,
     lookupHeader,
-    retreiveHeaders,
+    retrieveHeaders,
     HttpType (getHeaders),
 
     -- * Exceptions
