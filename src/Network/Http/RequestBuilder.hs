@@ -16,7 +16,6 @@
 module Network.Http.RequestBuilder (
     RequestBuilder,
     buildRequest,
-    http,
     setHostname,
     setAccept,
     setAccept',
@@ -55,8 +54,7 @@ newtype RequestBuilder α = RequestBuilder (State Request α)
 -- | Run a RequestBuilder, yielding a Request object you can use on the
 -- given connection.
 --
--- >     q <- buildRequest $ do
--- >         http POST "/api/v1/messages"
+-- >     q <- buildRequest POST "/api/v1/messages" $ do
 -- >         setContentType "application/json"
 -- >         setHostname "clue.example.com" 80
 -- >         setAccept "text/html"
@@ -64,44 +62,38 @@ newtype RequestBuilder α = RequestBuilder (State Request α)
 --
 -- Obviously it's up to you to later actually /send/ JSON data.
 --
-buildRequest :: RequestBuilder α -> IO Request
-buildRequest mm = do
-    let (RequestBuilder s) = (mm)
+buildRequest :: Method -> ByteString -> RequestBuilder α -> IO Request
+buildRequest m p' mm = do
+    let (RequestBuilder s) = (http >> mm)
     let q = Request {
         qHost = Nothing,
-        qMethod = GET,
-        qPath = "/",
+        qMethod = m,
+        qPath = p',
         qBody = Empty,
         qExpect = Normal,
         qHeaders = emptyHeaders
     }
     return $ execState s q
+  where
+    http = do
+      q <- get
+      let h1 = qHeaders q
+      let h2 = updateHeader h1 "Accept-Encoding" "gzip"
 
+      let e  = case m of
+              GET   -> Empty
+              TRACE -> Empty
+              _     -> Chunking
 
---
--- | Begin constructing a Request, starting with the request line.
---
-http :: Method -> ByteString -> RequestBuilder ()
-http m p' = do
-    q <- get
-    let h1 = qHeaders q
-    let h2 = updateHeader h1 "Accept-Encoding" "gzip"
+      let h3 = case e of
+              Chunking    -> updateHeader h2 "Transfer-Encoding" "chunked"
+              _           -> h2
 
-    let e  = case m of
-            GET   -> Empty
-            TRACE -> Empty
-            _     -> Chunking
+      put q {
+          qBody = e,
+          qHeaders = h3
+      }
 
-    let h3 = case e of
-            Chunking    -> updateHeader h2 "Transfer-Encoding" "chunked"
-            _           -> h2
-
-    put q {
-        qMethod = m,
-        qPath = p',
-        qBody = e,
-        qHeaders = h3
-    }
 
 --
 -- | Set the [virtual] hostname for the request. In ordinary conditions
