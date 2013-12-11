@@ -62,10 +62,10 @@ newtype RequestBuilder α = RequestBuilder (State Request α)
 --
 -- Obviously it's up to you to later actually /send/ JSON data.
 --
-buildRequest :: Method -> ByteString -> RequestBuilder α -> IO Request
-buildRequest m p' mm = do
+buildRequest :: Method -> ByteString -> RequestBuilder α -> Request
+buildRequest m p' mm =
     let (RequestBuilder s) = (http >> mm)
-    let q = Request {
+        q = Request {
         qHost = Nothing,
         qMethod = m,
         qPath = p',
@@ -73,7 +73,7 @@ buildRequest m p' mm = do
         qExpect = Normal,
         qHeaders = emptyHeaders
     }
-    return $ execState s q
+    in execState s q
   where
     http = do
       q <- get
