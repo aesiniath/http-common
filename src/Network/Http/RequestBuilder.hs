@@ -88,9 +88,9 @@ http m p' = do
     let h2 = updateHeader h1 "Accept-Encoding" "gzip"
 
     let e  = case m of
-            GET   -> Empty
-            TRACE -> Empty
-            _     -> Chunking
+            PUT  -> Chunking
+            POST -> Chunking
+            _    -> Empty
 
     let h3 = case e of
             Chunking    -> updateHeader h2 "Transfer-Encoding" "chunked"
