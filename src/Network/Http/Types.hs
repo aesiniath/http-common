@@ -37,6 +37,7 @@ module Network.Http.Types (
     setContentType,
     setContentLength,
     setExpectContinue,
+    setTransferEncoding,
     setHeader,
 
     -- * Responses

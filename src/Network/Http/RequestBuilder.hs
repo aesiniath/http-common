@@ -25,6 +25,7 @@ module Network.Http.RequestBuilder (
     setContentType,
     setContentLength,
     setExpectContinue,
+    setTransferEncoding,
     setHeader
 ) where
 
@@ -264,6 +265,22 @@ setContentLength n = do
     deleteHeader "Transfer-Encoding"
     setHeader "Content-Length" (S.pack $ show n)
     setEntityBody $ Static n
+
+--
+-- | Override the default setting about how the entity body will be sent.
+--
+-- This function is special: this explicitly sets the @Transfer-Encoding:@
+-- header to @chunked@ and will instruct the library to actually tranfer the
+-- body as a stream ("chunked transfer encoding"). See 'setContentLength' for
+-- forcing the opposite. You /really/ won't need this in normal operation, but
+-- some people are control freaks.
+--
+setTransferEncoding :: RequestBuilder ()
+setTransferEncoding = do
+    deleteHeader "Content-Length"
+    setEntityBody Chunking
+    setHeader "Transfer-Encoding" "chunked"
+
 
 --
 -- | Specify that this request should set the expectation that the
