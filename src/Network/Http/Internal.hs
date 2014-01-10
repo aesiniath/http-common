@@ -40,7 +40,6 @@ module Network.Http.Internal (
     buildHeaders,
     lookupHeader,
     retrieveHeaders,
-    removeHeader,
     HttpType (getHeaders),
     HttpParseException(..),
 
