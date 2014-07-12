@@ -143,7 +143,7 @@ data Request
         qBody    :: !EntityBody,
         qExpect  :: !ExpectMode,
         qHeaders :: !Headers
-    } deriving (Eq, Ord)
+    } deriving (Eq)
 
 instance Show Request where
     show q = {-# SCC "Request.show" #-}
@@ -355,7 +355,7 @@ composeResponseBytes p =
 -}
 newtype Headers = Wrap {
     unWrap :: HashMap (CI ByteString) ByteString
-}
+} deriving (Eq)
 
 instance Show Headers where
     show x = S.unpack $ S.filter (/= '\r') $ Builder.toByteString $ joinHeaders $ unWrap x
