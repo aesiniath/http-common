@@ -34,6 +34,7 @@ import qualified Blaze.ByteString.Builder as Builder (fromByteString,
                                                       toByteString)
 import qualified Blaze.ByteString.Builder.Char8 as Builder (fromShow,
                                                             fromString)
+import Control.Applicative
 import Control.Monad.State
 import Data.ByteString (ByteString)
 import qualified Data.ByteString.Base64 as BS64
@@ -50,7 +51,7 @@ import Network.Http.Internal
 -- conveniently setup a 'Request' object.
 --
 newtype RequestBuilder α = RequestBuilder (State Request α)
-  deriving (Monad, MonadState Request)
+  deriving (Functor, Applicative, Monad, MonadState Request)
 
 --
 -- | Run a RequestBuilder, yielding a Request object you can use on the
