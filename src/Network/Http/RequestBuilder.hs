@@ -15,7 +15,9 @@
 
 module Network.Http.RequestBuilder (
     RequestBuilder,
+    RequestBuilderT,
     buildRequest,
+    buildRequestPure,
     http,
     setHostname,
     setAccept,
@@ -34,6 +36,7 @@ import qualified Blaze.ByteString.Builder as Builder (fromByteString,
                                                       toByteString)
 import qualified Blaze.ByteString.Builder.Char8 as Builder (fromShow,
                                                             fromString)
+import Control.Monad.Identity
 import Control.Monad.State
 import Data.ByteString (ByteString)
 import qualified Data.ByteString.Base64 as BS64
@@ -46,11 +49,13 @@ import Data.Monoid (mconcat)
 import Network.Http.Internal
 
 --
--- | The RequestBuilder monad allows you to abuse do-notation to
+-- | The RequestBuilderT monad allows you to abuse do-notation to
 -- conveniently setup a 'Request' object.
+-- The type @RequestBuilder@ is aliased to work in the @Identity@ monad.
+-- Use @RequestBuilderT@ to operate in any arbitrary monad.
 --
-newtype RequestBuilder α = RequestBuilder (State Request α)
-  deriving (Monad, MonadState Request)
+type RequestBuilderT m a = StateT Request m a
+type RequestBuilder a = RequestBuilderT Identity a
 
 --
 -- | Run a RequestBuilder, yielding a Request object you can use on the
@@ -65,24 +70,29 @@ newtype RequestBuilder α = RequestBuilder (State Request α)
 --
 -- Obviously it's up to you to later actually /send/ JSON data.
 --
-buildRequest :: RequestBuilder α -> IO Request
-buildRequest mm = do
-    let (RequestBuilder s) = (mm)
-    let q = Request {
-        qHost = Nothing,
-        qMethod = GET,
-        qPath = "/",
-        qBody = Empty,
-        qExpect = Normal,
-        qHeaders = emptyHeaders
-    }
-    return $ execState s q
+buildRequest :: Monad m => RequestBuilderT m α -> m Request
+buildRequest = flip execStateT defaultRequest
 
+-- | Operates @buildRequest@ in the @Identity@ monad, for building requests
+-- purely.
+buildRequestPure :: RequestBuilderT Identity a -> Request
+buildRequestPure = runIdentity . flip execStateT defaultRequest
+
+-- | A default Request object.
+defaultRequest :: Request
+defaultRequest = Request {
+    qHost = Nothing,
+    qMethod = GET,
+    qPath = "/",
+    qBody = Empty,
+    qExpect = Normal,
+    qHeaders = emptyHeaders
+}
 
 --
 -- | Begin constructing a Request, starting with the request line.
 --
-http :: Method -> ByteString -> RequestBuilder ()
+http :: Monad m => Method -> ByteString -> RequestBuilderT m ()
 http m p' = do
     q <- get
     let h1 = qHeaders q
@@ -110,7 +120,7 @@ http m p' = do
 -- header in HTTP 1.1 and is set directly from the name of the server
 -- you connected to when calling 'Network.Http.Connection.openConnection'.
 --
-setHostname :: Hostname -> Port -> RequestBuilder ()
+setHostname :: Monad m => Hostname -> Port -> RequestBuilderT m ()
 setHostname h' p = do
     q <- get
     put q {
@@ -131,7 +141,7 @@ setHostname h' p = do
 -- function, but we recommend you use them where offered for their
 -- stronger types.
 --
-setHeader :: ByteString -> ByteString -> RequestBuilder ()
+setHeader :: Monad m => ByteString -> ByteString -> RequestBuilderT m ()
 setHeader k' v' = do
     q <- get
     let h0 = qHeaders q
@@ -140,7 +150,7 @@ setHeader k' v' = do
         qHeaders = h1
     }
 
-deleteHeader :: ByteString -> RequestBuilder ()
+deleteHeader :: Monad m => ByteString -> RequestBuilderT m ()
 deleteHeader k' = do
     q <- get
     let h0 = qHeaders q
@@ -150,7 +160,7 @@ deleteHeader k' = do
     }
 
 {-# INLINE setEntityBody #-}
-setEntityBody :: EntityBody -> RequestBuilder ()
+setEntityBody :: Monad m => EntityBody -> RequestBuilderT m ()
 setEntityBody e = do
     q <- get
     put q {
@@ -158,7 +168,7 @@ setEntityBody e = do
     }
 
 {-# INLINE setExpectMode #-}
-setExpectMode :: ExpectMode -> RequestBuilder ()
+setExpectMode :: Monad m => ExpectMode -> RequestBuilderT m ()
 setExpectMode e = do
     q <- get
     put q {
@@ -170,7 +180,7 @@ setExpectMode e = do
 -- from the server. For more complex @Accept:@ headers, use
 -- 'setAccept''.
 --
-setAccept :: ByteString -> RequestBuilder ()
+setAccept :: Monad m => ByteString -> RequestBuilderT m ()
 setAccept v' = do
     setHeader "Accept" v'
 
@@ -186,7 +196,7 @@ setAccept v' = do
 -- @text\/html; q=1.0, application\/xml; q=0.8, \*\/\*; q=0.0@ as you
 -- would expect.
 --
-setAccept' :: [(ByteString,Float)] -> RequestBuilder ()
+setAccept' :: Monad m => [(ByteString,Float)] -> RequestBuilderT m ()
 setAccept' tqs = do
     setHeader "Accept" v'
   where
@@ -225,7 +235,8 @@ setAccept' tqs = do
 {-
     This would be better using Builder, right?
 -}
-setAuthorizationBasic :: ByteString -> ByteString -> RequestBuilder ()
+setAuthorizationBasic :: Monad m 
+                      => ByteString -> ByteString -> RequestBuilderT m ()
 setAuthorizationBasic user' passwd' = do
     setHeader "Authorization" v'
   where
@@ -242,7 +253,7 @@ type ContentType = ByteString
 -- sending. Defaults to @\"text\/plain\"@, so usually you need to set
 -- this if 'PUT'ting.
 --
-setContentType :: ContentType -> RequestBuilder ()
+setContentType :: Monad m => ContentType -> RequestBuilderT m ()
 setContentType v' = do
     setHeader "Content-Type" v'
 
@@ -260,7 +271,7 @@ setContentType v' = do
 -- writes precisely that many bytes.
 --
 --
-setContentLength :: Int64 -> RequestBuilder ()
+setContentLength :: Monad m => Int64 -> RequestBuilderT m ()
 setContentLength n = do
     deleteHeader "Transfer-Encoding"
     setHeader "Content-Length" (S.pack $ show n)
@@ -275,7 +286,7 @@ setContentLength n = do
 -- forcing the opposite. You /really/ won't need this in normal operation, but
 -- some people are control freaks.
 --
-setTransferEncoding :: RequestBuilder ()
+setTransferEncoding :: Monad m => RequestBuilderT m ()
 setTransferEncoding = do
     deleteHeader "Content-Length"
     setEntityBody Chunking
@@ -299,7 +310,7 @@ setTransferEncoding = do
 -- automatically send an intermediate 100 response, and then just read
 -- the body regardless, making this a bit of a no-op in most cases.
 --
-setExpectContinue :: RequestBuilder ()
+setExpectContinue :: Monad m => RequestBuilderT m ()
 setExpectContinue = do
     setHeader "Expect" "100-continue"
     setExpectMode Continue
