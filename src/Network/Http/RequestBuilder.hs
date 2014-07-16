@@ -1,7 +1,7 @@
 --
 -- HTTP types for use with io-streams and pipes
 --
--- Copyright © 2012-2013 Operational Dynamics Consulting, Pty Ltd
+-- Copyright © 2012-2014 Operational Dynamics Consulting, Pty Ltd and Others
 --
 -- The code in this file, and the program it is a part of, is
 -- made available to you by its authors as open source software:
@@ -34,6 +34,7 @@ import qualified Blaze.ByteString.Builder as Builder (fromByteString,
                                                       toByteString)
 import qualified Blaze.ByteString.Builder.Char8 as Builder (fromShow,
                                                             fromString)
+import Control.Applicative
 import Control.Monad.State
 import Data.ByteString (ByteString)
 import qualified Data.ByteString.Base64 as BS64
@@ -50,13 +51,13 @@ import Network.Http.Internal
 -- conveniently setup a 'Request' object.
 --
 newtype RequestBuilder α = RequestBuilder (State Request α)
-  deriving (Monad, MonadState Request)
+  deriving (Functor, Applicative, Monad, MonadState Request)
 
 --
 -- | Run a RequestBuilder, yielding a Request object you can use on the
 -- given connection.
 --
--- >     q <- buildRequest $ do
+-- >     let q = buildRequest $ do
 -- >         http POST "/api/v1/messages"
 -- >         setContentType "application/json"
 -- >         setHostname "clue.example.com" 80
@@ -65,7 +66,7 @@ newtype RequestBuilder α = RequestBuilder (State Request α)
 --
 -- Obviously it's up to you to later actually /send/ JSON data.
 --
-buildRequest :: RequestBuilder α -> IO Request
+buildRequest :: RequestBuilder α -> Request
 buildRequest mm = do
     let (RequestBuilder s) = (mm)
     let q = Request {
@@ -76,8 +77,7 @@ buildRequest mm = do
         qExpect = Normal,
         qHeaders = emptyHeaders
     }
-    return $ execState s q
-
+    execState s q
 
 --
 -- | Begin constructing a Request, starting with the request line.
