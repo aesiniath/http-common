@@ -1,6 +1,6 @@
 cabal-version:       >= 1.10
 name:                http-common
-version:             0.7.2.0
+version:             0.8.0.1
 synopsis:            Common types for HTTP clients and servers
 description:
  /Overview/
