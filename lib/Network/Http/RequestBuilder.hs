@@ -58,11 +58,11 @@ newtype RequestBuilder α = RequestBuilder (State Request α)
 -- given connection.
 --
 -- >     let q = buildRequest $ do
--- >         http POST "/api/v1/messages"
--- >         setContentType "application/json"
--- >         setHostname "clue.example.com" 80
--- >         setAccept "text/html"
--- >         setHeader "X-WhoDoneIt" "The Butler"
+-- >                 http POST "/api/v1/messages"
+-- >                 setContentType "application/json"
+-- >                 setHostname "clue.example.com" 80
+-- >                 setAccept "text/html"
+-- >                 setHeader "X-WhoDoneIt" "The Butler"
 --
 -- Obviously it's up to you to later actually /send/ JSON data.
 --
