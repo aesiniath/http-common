@@ -14,9 +14,9 @@ license:             BSD3
 license-file:        LICENCE
 author:              Andrew Cowie <andrew@operationaldynamics.com>
 maintainer:          Andrew Cowie <andrew@operationaldynamics.com>
-copyright:           © 2012-2013 Operational Dynamics Consulting, Pty Ltd and Others
+copyright:           © 2012-2014 Operational Dynamics Consulting, Pty Ltd and Others
 category:            Web
-tested-with:         GHC == 7.6
+tested-with:         GHC == 7.8
 stability:           experimental
 homepage:            http://research.operationaldynamics.com/projects/http-streams/
 bug-reports:         https://github.com/afcowie/http-common/issues
@@ -38,7 +38,7 @@ library
                      text,
                      unordered-containers
 
-  hs-source-dirs:    src
+  hs-source-dirs:    lib
   exposed-modules:   Network.Http.Types,
                      Network.Http.RequestBuilder,
                      Network.Http.Internal

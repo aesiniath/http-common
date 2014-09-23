@@ -143,16 +143,16 @@ data Request
         qBody    :: !EntityBody,
         qExpect  :: !ExpectMode,
         qHeaders :: !Headers
-    }
+    } deriving (Eq)
 
 instance Show Request where
     show q = {-# SCC "Request.show" #-}
         S.unpack $ S.filter (/= '\r') $ Builder.toByteString $ composeRequestBytes q "<default>"
 
 
-data EntityBody = Empty | Chunking | Static Int64
+data EntityBody = Empty | Chunking | Static Int64 deriving (Show, Eq, Ord)
 
-data ExpectMode = Normal | Continue
+data ExpectMode = Normal | Continue deriving (Show, Eq, Ord)
 
 {-
     The bit that builds up the actual string to be transmitted. This
@@ -195,7 +195,9 @@ composeRequestBytes q h' =
         PATCH   -> Builder.fromString "PATCH"
         (Method x) -> Builder.fromByteString x
 
-    uri = Builder.copyByteString $ qPath q
+    uri = case qPath q of
+        ""   -> Builder.fromChar '/'
+        path -> Builder.copyByteString path
 
     version = Builder.fromString "HTTP/1.1"
 
@@ -355,7 +357,7 @@ composeResponseBytes p =
 -}
 newtype Headers = Wrap {
     unWrap :: HashMap (CI ByteString) ByteString
-}
+} deriving (Eq)
 
 instance Show Headers where
     show x = S.unpack $ S.filter (/= '\r') $ Builder.toByteString $ joinHeaders $ unWrap x

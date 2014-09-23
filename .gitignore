@@ -1,4 +1,4 @@
-cabal-dev/
+.cabal-sandbox/
 dist/
 snippet
 check
@@ -8,6 +8,3 @@ report.html
 *.mem
 tags
 TAGS
-config.h
-tests/benchmark.hs
-tests/snippet.hs
