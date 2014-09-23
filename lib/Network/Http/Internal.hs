@@ -195,7 +195,9 @@ composeRequestBytes q h' =
         PATCH   -> Builder.fromString "PATCH"
         (Method x) -> Builder.fromByteString x
 
-    uri = Builder.copyByteString $ qPath q
+    uri = case qPath q of
+        ""   -> Builder.fromChar '/'
+        path -> Builder.copyByteString path
 
     version = Builder.fromString "HTTP/1.1"
 
