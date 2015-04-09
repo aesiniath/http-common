@@ -16,6 +16,7 @@
 module Network.Http.RequestBuilder (
     RequestBuilder,
     buildRequest,
+    buildRequest',
     http,
     setHostname,
     setAccept,
@@ -57,7 +58,7 @@ newtype RequestBuilder α = RequestBuilder (State Request α)
 -- | Run a RequestBuilder, yielding a Request object you can use on the
 -- given connection.
 --
--- >     let q = buildRequest $ do
+-- >     let q = buildRequest' $ do
 -- >                 http POST "/api/v1/messages"
 -- >                 setContentType "application/json"
 -- >                 setHostname "clue.example.com" 80
@@ -66,8 +67,8 @@ newtype RequestBuilder α = RequestBuilder (State Request α)
 --
 -- Obviously it's up to you to later actually /send/ JSON data.
 --
-buildRequest :: RequestBuilder α -> Request
-buildRequest mm = do
+buildRequest' :: RequestBuilder α -> Request
+buildRequest' mm = do
     let (RequestBuilder s) = (mm)
     let q = Request {
         qHost = Nothing,
@@ -78,6 +79,20 @@ buildRequest mm = do
         qHeaders = emptyHeaders
     }
     execState s q
+
+--
+-- | Run a RequestBuilder from within a monadic action.
+--
+-- Older versions of this library had 'buildRequest' in IO; there's
+-- no longer a need for that, but this code path will continue to
+-- work for existing users.
+--
+-- >     q <- buildRequest $ do
+-- >              http GET "/"
+--
+buildRequest :: Monad ν => RequestBuilder α -> ν Request
+buildRequest = return . buildRequest'
+{-# INLINE buildRequest #-}
 
 --
 -- | Begin constructing a Request, starting with the request line.

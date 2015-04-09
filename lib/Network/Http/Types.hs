@@ -28,6 +28,7 @@ module Network.Http.Types (
 
     RequestBuilder,
     buildRequest,
+    buildRequest',
     http,
     setHostname,
     setAccept,
