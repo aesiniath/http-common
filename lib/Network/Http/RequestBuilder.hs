@@ -16,7 +16,7 @@
 module Network.Http.RequestBuilder (
     RequestBuilder,
     buildRequest,
-    buildRequest',
+    buildRequest1,
     http,
     setHostname,
     setAccept,
@@ -58,7 +58,7 @@ newtype RequestBuilder α = RequestBuilder (State Request α)
 -- | Run a RequestBuilder, yielding a Request object you can use on the
 -- given connection.
 --
--- >     let q = buildRequest' $ do
+-- >     let q = buildRequest1 $ do
 -- >                 http POST "/api/v1/messages"
 -- >                 setContentType "application/json"
 -- >                 setHostname "clue.example.com" 80
@@ -67,8 +67,8 @@ newtype RequestBuilder α = RequestBuilder (State Request α)
 --
 -- Obviously it's up to you to later actually /send/ JSON data.
 --
-buildRequest' :: RequestBuilder α -> Request
-buildRequest' mm = do
+buildRequest1 :: RequestBuilder α -> Request
+buildRequest1 mm = do
     let (RequestBuilder s) = (mm)
     let q = Request {
         qHost = Nothing,
@@ -91,7 +91,7 @@ buildRequest' mm = do
 -- >              http GET "/"
 --
 buildRequest :: Monad ν => RequestBuilder α -> ν Request
-buildRequest = return . buildRequest'
+buildRequest = return . buildRequest1
 {-# INLINE buildRequest #-}
 
 --
