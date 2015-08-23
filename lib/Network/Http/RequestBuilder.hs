@@ -9,6 +9,7 @@
 -- the BSD licence.
 --
 
+{-# LANGUAGE CPP                        #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings          #-}
 {-# OPTIONS_HADDOCK hide #-}
@@ -35,7 +36,6 @@ import qualified Blaze.ByteString.Builder as Builder (fromByteString,
                                                       toByteString)
 import qualified Blaze.ByteString.Builder.Char8 as Builder (fromShow,
                                                             fromString)
-import Control.Applicative
 import Control.Monad.State
 import Data.ByteString (ByteString)
 import qualified Data.ByteString.Base64 as BS64
@@ -43,7 +43,11 @@ import Data.ByteString.Char8 ()
 import qualified Data.ByteString.Char8 as S
 import Data.Int (Int64)
 import Data.List (intersperse)
+
+#if !MIN_VERSION_base(4,8,0)
+import Control.Applicative
 import Data.Monoid (mconcat)
+#endif
 
 import Network.Http.Internal
 
@@ -318,4 +322,3 @@ setExpectContinue :: RequestBuilder ()
 setExpectContinue = do
     setHeader "Expect" "100-continue"
     setExpectMode Continue
-

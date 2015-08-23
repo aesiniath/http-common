@@ -42,7 +42,7 @@ library
   exposed-modules:   Network.Http.Types,
                      Network.Http.RequestBuilder,
                      Network.Http.Internal
-  other-modules:     
+  other-modules:
 
   ghc-options:       -O2
                      -Wall

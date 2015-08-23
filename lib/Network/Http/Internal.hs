@@ -10,6 +10,7 @@
 --
 
 {-# LANGUAGE BangPatterns       #-}
+{-# LANGUAGE CPP                #-}
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE OverloadedStrings  #-}
 {-# OPTIONS_HADDOCK hide, prune #-}
@@ -67,9 +68,12 @@ import Data.HashMap.Strict (HashMap, delete, empty, foldrWithKey, insert,
                             insertWith, lookup, toList)
 import Data.Int (Int64)
 import Data.List (foldl')
-import Data.Monoid (mconcat, mempty)
 import Data.Typeable (Typeable)
 import Data.Word (Word16)
+
+#if !MIN_VERSION_base(4,8,0)
+import Data.Monoid (mconcat, mempty)
+#endif
 
 {-
     This is a String because that's what the uri package works in. There
