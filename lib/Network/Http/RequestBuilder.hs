@@ -318,4 +318,3 @@ setExpectContinue :: RequestBuilder ()
 setExpectContinue = do
     setHeader "Expect" "100-continue"
     setExpectMode Continue
-
