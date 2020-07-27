@@ -1,4 +1,4 @@
-cabal-version:       >= 1.24
+cabal-version:       1.24
 name:                http-common
 version:             0.8.2.1
 synopsis:            Common types for HTTP clients and servers
@@ -13,6 +13,7 @@ description:
 license:             BSD3
 license-file:        LICENSE
 author:              Andrew Cowie <istathar@gmail.com>
+maintainer:          Andrew Cowie <istathar@gmail.com>
 copyright:           © 2012-2020 Athae Eredh Siniath and Others
 category:            Web
 tested-with:         GHC == 8.8
@@ -43,8 +44,7 @@ library
                      Network.Http.Internal
   other-modules:     
 
-  ghc-options:       -O2
-                     -Wall
+  ghc-options:       -Wall
                      -Wwarn
                      -fwarn-tabs
                      -funbox-strict-fields
@@ -53,9 +53,6 @@ library
                      -fno-warn-unused-do-bind
 
   include-dirs:      .
-
-  ghc-prof-options:  -fprof-auto-top
-
 
 source-repository    head
   type:              git
