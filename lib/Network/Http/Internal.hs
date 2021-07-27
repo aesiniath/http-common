@@ -75,7 +75,6 @@ import Data.HashMap.Strict (
  )
 import Data.Int (Int64)
 import Data.List (foldl')
-import Data.Monoid (mconcat, mempty)
 import Data.Typeable (Typeable)
 import Data.Word (Word16)
 
@@ -221,6 +220,24 @@ composeRequestBytes q h' =
 crlf = Builder.fromString "\r\n"
 
 sp = Builder.fromChar ' '
+
+composeMultipartBytes :: ByteString -> Maybe FilePath -> Builder
+composeMultipartBytes name possibleFilename =
+    mconcat
+        [ dispositionLine
+        , crlf
+        ]
+  where
+    dispositionLine =
+        "Content-Disposition: form-data; name=\""
+            <> Builder.copyByteString name
+            <> "\""
+            <> case possibleFilename of
+                Just filename ->
+                    "; filename=\""
+                        <> Builder.fromString filename
+                        <> "\""
+                Nothing -> mempty
 
 type StatusCode = Int
 
