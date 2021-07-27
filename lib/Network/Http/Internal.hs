@@ -221,13 +221,20 @@ crlf = Builder.fromString "\r\n"
 
 sp = Builder.fromChar ' '
 
-composeMultipartBytes :: ByteString -> Maybe FilePath -> Builder
-composeMultipartBytes name possibleFilename =
+dashdash = Builder.fromString "--"
+
+composeMultipartBytes :: ByteString -> ByteString -> Maybe FilePath -> Builder
+composeMultipartBytes boundary name possibleFilename =
     mconcat
-        [ dispositionLine
+        [ boundaryLine
+        , crlf
+        , dispositionLine
         , crlf
         ]
   where
+    boundaryLine =
+        dashdash
+            <> Builder.copyByteString boundary
     dispositionLine =
         "Content-Disposition: form-data; name=\""
             <> Builder.copyByteString name
@@ -238,6 +245,12 @@ composeMultipartBytes name possibleFilename =
                         <> Builder.fromString filename
                         <> "\""
                 Nothing -> mempty
+
+composeMultipartEnding :: ByteString -> Builder
+composeMultipartEnding boundary =
+    dashdash
+        <> Builder.copyByteString boundary
+        <> dashdash
 
 type StatusCode = Int
 
