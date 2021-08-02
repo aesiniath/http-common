@@ -22,12 +22,12 @@ module Network.Http.RequestBuilder (
     setAccept,
     setAccept',
     setAuthorizationBasic,
-    ContentType,
     setContentType,
     setContentLength,
     setExpectContinue,
     setTransferEncoding,
-    setHeader
+    setHeader,
+    setContentMultipart
 ) where
 
 import Blaze.ByteString.Builder (Builder)
@@ -35,7 +35,6 @@ import qualified Blaze.ByteString.Builder as Builder (fromByteString,
                                                       toByteString)
 import qualified Blaze.ByteString.Builder.Char8 as Builder (fromShow,
                                                             fromString)
-import Control.Applicative
 import Control.Monad.State
 import Data.ByteString (ByteString)
 import qualified Data.ByteString.Base64 as BS64
@@ -43,7 +42,6 @@ import Data.ByteString.Char8 ()
 import qualified Data.ByteString.Char8 as S
 import Data.Int (Int64)
 import Data.List (intersperse)
-import Data.Monoid (mconcat)
 
 import Network.Http.Internal
 
@@ -76,7 +74,8 @@ buildRequest1 mm = do
         qPath = "/",
         qBody = Empty,
         qExpect = Normal,
-        qHeaders = emptyHeaders
+        qHeaders = emptyHeaders,
+        qBoundary = emptyBoundary
     }
     execState s q
 
@@ -248,10 +247,6 @@ setAuthorizationBasic user' passwd' = do
     msg' = BS64.encode str'
     str' = S.concat [user', ":", passwd']
 
-
-type ContentType = ByteString
-
-
 --
 -- | Set the MIME type corresponding to the body of the request you are
 -- sending. Defaults to @\"text\/plain\"@, so usually you need to set
@@ -260,6 +255,27 @@ type ContentType = ByteString
 setContentType :: ContentType -> RequestBuilder ()
 setContentType v' = do
     setHeader "Content-Type" v'
+
+--
+-- | If sending multipart form data (RFC 7578), you need to set the MIME to
+-- @\"multipart/form-data\"@ and specify the boundary separator that will be
+-- used.
+--
+-- This function is special: when you subsequently use 'multipartFormBody' to
+-- sequence the individual body parts when sending the request it will
+-- separate the parts by the boundary set by this header.
+--
+setContentMultipart :: Boundary -> RequestBuilder ()
+setContentMultipart boundary = do
+    setHeader "Content-Type" (S.append "multipart/form-data; boundary=" (unBoundary boundary))
+    setBoundary boundary
+
+setBoundary :: Boundary -> RequestBuilder ()
+setBoundary boundary = do
+    q <- get
+    put q {
+        qBoundary = boundary
+    }
 
 --
 -- | Specify the length of the request body, in bytes.
@@ -318,4 +334,3 @@ setExpectContinue :: RequestBuilder ()
 setExpectContinue = do
     setHeader "Expect" "100-continue"
     setExpectMode Continue
-

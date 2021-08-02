@@ -21,9 +21,16 @@
 module Network.Http.Internal (
     Hostname,
     Port,
+    ContentType,
+    FieldName,
     Request (..),
     EntityBody (..),
     ExpectMode (..),
+    Boundary,
+    unBoundary,
+    emptyBoundary,
+    randomBoundary,
+    packBoundary,
     Response (..),
     StatusCode,
     TransferEncoding (..),
@@ -41,6 +48,8 @@ module Network.Http.Internal (
     retrieveHeaders,
     HttpType (getHeaders),
     HttpParseException (..),
+    composeMultipartBytes,
+    composeMultipartEnding,
     -- for testing
     composeRequestBytes,
     composeResponseBytes,
@@ -63,6 +72,7 @@ import Control.Exception (Exception)
 import Data.ByteString (ByteString)
 import qualified Data.ByteString.Char8 as S
 import Data.CaseInsensitive (CI, mk, original)
+import Data.Char (chr)
 import Data.HashMap.Strict (
     HashMap,
     delete,
@@ -77,10 +87,15 @@ import Data.Int (Int64)
 import Data.List (foldl')
 import Data.Typeable (Typeable)
 import Data.Word (Word16)
+import System.Random (newStdGen, randomRs)
 
 type Hostname = ByteString
 
 type Port = Word16
+
+type ContentType = ByteString
+
+type FieldName = ByteString
 
 -- | HTTP Methods, as per RFC 2616
 data Method
@@ -142,6 +157,7 @@ data Request = Request
     , qBody :: !EntityBody
     , qExpect :: !ExpectMode
     , qHeaders :: !Headers
+    , qBoundary :: !Boundary
     }
     deriving (Eq)
 
@@ -153,6 +169,38 @@ instance Show Request where
 data EntityBody = Empty | Chunking | Static Int64 deriving (Show, Eq, Ord)
 
 data ExpectMode = Normal | Continue deriving (Show, Eq, Ord)
+
+newtype Boundary = Boundary ByteString deriving (Show, Eq)
+
+unBoundary :: Boundary -> ByteString
+unBoundary (Boundary b') = b'
+
+emptyBoundary :: Boundary
+emptyBoundary = Boundary S.empty
+
+represent :: Int -> Char
+represent x
+    | x < 10 = chr (48 + x)
+    | x < 36 = chr (65 + x - 10)
+    | x < 62 = chr (97 + x - 36)
+    | otherwise = '@'
+
+{- |
+Generate a random string to be used as an inter-part boundary in
+multipart/form-data.
+-}
+randomBoundary :: IO Boundary
+randomBoundary = do
+    gen <- newStdGen
+    let result = S.pack . fmap represent . take 20 . randomRs (0, 61) $ gen
+    pure (Boundary result)
+
+{- |
+If you want to fix the multipart boundary to a known value (for testing
+purposes) you can use this.
+-}
+packBoundary :: String -> Boundary
+packBoundary = Boundary . S.pack
 
 {-
     The bit that builds up the actual string to be transmitted. This
@@ -223,18 +271,20 @@ sp = Builder.fromChar ' '
 
 dashdash = Builder.fromString "--"
 
-composeMultipartBytes :: ByteString -> ByteString -> Maybe FilePath -> Builder
-composeMultipartBytes boundary name possibleFilename =
+composeMultipartBytes :: Boundary -> FieldName -> Maybe FilePath -> Maybe ContentType -> Builder
+composeMultipartBytes boundary name possibleFilename possibleContentType =
     mconcat
         [ boundaryLine
-        , crlf
         , dispositionLine
-        , crlf
+        , mimetypeLine
+        , crlf -- second CR LF
         ]
   where
     boundaryLine =
-        dashdash
-            <> Builder.copyByteString boundary
+        crlf
+            <> dashdash
+            <> Builder.copyByteString (unBoundary boundary)
+            <> crlf
     dispositionLine =
         "Content-Disposition: form-data; name=\""
             <> Builder.copyByteString name
@@ -245,12 +295,21 @@ composeMultipartBytes boundary name possibleFilename =
                         <> Builder.fromString filename
                         <> "\""
                 Nothing -> mempty
+            <> crlf
+    mimetypeLine =
+        case possibleContentType of
+            Just mimetype ->
+                "Content-Type: " <> Builder.copyByteString mimetype
+                    <> crlf
+            Nothing -> mempty
 
-composeMultipartEnding :: ByteString -> Builder
+composeMultipartEnding :: Boundary -> Builder
 composeMultipartEnding boundary =
-    dashdash
-        <> Builder.copyByteString boundary
+    crlf
         <> dashdash
+        <> Builder.copyByteString (unBoundary boundary)
+        <> dashdash
+        <> crlf
 
 type StatusCode = Int
 
@@ -288,8 +347,6 @@ getStatusCode :: Response -> StatusCode
 getStatusCode = pStatusCode
 {-# INLINE getStatusCode #-}
 
---
-
 {- |
 Get the HTTP response status message. Keep in mind that this is
 /not/ normative; whereas 'getStatusCode' values are authoritative.
@@ -297,8 +354,6 @@ Get the HTTP response status message. Keep in mind that this is
 getStatusMessage :: Response -> ByteString
 getStatusMessage = pStatusMsg
 {-# INLINE getStatusMessage #-}
-
---
 
 {- |
 Lookup a header in the response. HTTP header field names are
