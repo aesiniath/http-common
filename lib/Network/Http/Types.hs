@@ -39,6 +39,13 @@ module Network.Http.Types (
     setContentLength,
     setExpectContinue,
     setTransferEncoding,
+    FieldName,
+    Boundary,
+    unBoundary,
+    emptyBoundary,
+    randomBoundary,
+    packBoundary,
+    setContentMultipart,
     setHeader,
 
     -- * Responses
