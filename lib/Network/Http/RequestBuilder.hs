@@ -257,13 +257,14 @@ setContentType v' = do
     setHeader "Content-Type" v'
 
 --
--- | If sending multipart form data (RFC 7578), you need to set the MIME to
--- @\"multipart/form-data\"@ and specify the boundary separator that will be
--- used.
+-- | If sending multipart form data (RFC 7578), you need to set the MIME type
+-- to @\"multipart/form-data\"@ and specify the boundary separator that will
+-- be used.
 --
--- This function is special: when you subsequently use 'multipartFormBody' to
--- sequence the individual body parts when sending the request it will
--- separate the parts by the boundary set by this header.
+-- This function is special: you must subsequently use
+-- 'Network.Http.Client.multipartFormBody' to sequence the individual body
+-- parts. When sending the request it will separate the individual parts by
+-- the boundary value set by this function.
 --
 setContentMultipart :: Boundary -> RequestBuilder ()
 setContentMultipart boundary = do

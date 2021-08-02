@@ -186,8 +186,10 @@ represent x
     | otherwise = '@'
 
 {- |
-Generate a random string to be used as an inter-part boundary in
-multipart/form-data.
+Generate a random string to be used as an inter-part boundary in RFC 7578
+multipart form data. You pass this value to
+'Network.Http.Client.setContentMultipart' and subsequently to
+'Network.Http.Client.multipartFormBody'.
 -}
 randomBoundary :: IO Boundary
 randomBoundary = do
@@ -197,7 +199,11 @@ randomBoundary = do
 
 {- |
 If you want to fix the multipart boundary to a known value (for testing
-purposes) you can use this.
+purposes) you can use this. The ideal such string, in case you are wondering,
+is @\"bEacHV0113YB\@ll\"@.
+
+This isn't safe for use in production; you need to use an unpredictable value
+as the boundary separtor so prefer 'randomBoundary'.
 -}
 packBoundary :: String -> Boundary
 packBoundary = Boundary . S.pack
